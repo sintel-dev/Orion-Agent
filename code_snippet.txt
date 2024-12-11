@@ -1,0 +1,35 @@
+import numpy as np
+import pandas as pd
+from orion import Orion
+
+# Generate a synthetic time series dataset
+np.random.seed(42)
+time = np.arange(0, 1000, 1)
+data = np.sin(time) + np.random.normal(0, 0.1, len(time))
+
+# Introduce anomalies
+data[200:210] += 3  # Add a spike
+data[500:510] -= 3  # Add a dip
+
+# Create a DataFrame
+df = pd.DataFrame({'timestamp': time, 'value': data})
+print(df.head())
+
+# Initialize Orion
+hyperparameters = {
+    "mlstars.custom.timeseries_preprocessing.time_segments_aggregate#1": {
+        "interval": 1
+    },
+    "keras.Sequential.LSTMTimeSeriesRegressor#1" : {
+        "epochs": 5,
+        "verbose": True
+    }
+}
+orion = Orion("lstm_dynamic_threshold", hyperparameters)
+
+# Fit the model and detect anomalies
+anomalies = orion.fit_detect(df)
+
+# Print detected anomalies
+print("Detected anomalies:")
+print(anomalies)
