@@ -2,3 +2,4 @@ orion-ml
 openai
 pandas
 numpy
+PyGithub # for document collection

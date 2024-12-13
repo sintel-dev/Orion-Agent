@@ -6,7 +6,15 @@ import os
 from openai import OpenAI
 
 TEMPLATE = """
-Famili
+Orion is a python library for time series anomaly detection.
+Familiarize yourself with the Orion library: https://github.com/sintel-dev/Orion/
+
+You are going to help the user find anomalies in their data and solve their task
+provided under USER TASK DESCRIPTION by generating code that explicitly uses Orion.
+
+Only return code, return nothing else.
+
+USER TASK DESCRIPTION:
 """
 
 class LLM:
