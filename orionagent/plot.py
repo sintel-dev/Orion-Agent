@@ -9,3 +9,7 @@ def generate_time_series_chart():
     })
     fig = px.line(df, x="time", y="value", title="Random Time Series Chart")
     return fig
+
+def plot_dataframe(df, time_column, value_column):
+    fig = px.line(df, x=time_column, y=value_column, title="Time Series Chart")
+    return fig

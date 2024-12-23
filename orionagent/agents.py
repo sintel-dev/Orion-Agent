@@ -50,7 +50,7 @@ class Agent:
         return response
     
 
-def execute_code(code: str) -> bool:
+def execute_code(code: str, variable_name: str) -> bool:
     """Execute code block.
     
     This function takes in a string ``code`` and
@@ -78,7 +78,7 @@ def execute_code(code: str) -> bool:
         exec_locals = {}
         exec(code, exec_globals, exec_locals)
         
-        result = exec_locals.get('anomalies', None)
+        result = exec_locals.get(variable_name, None)
         return True, result
     
     except Exception as ex:
@@ -90,6 +90,6 @@ if __name__ == '__main__':
     with open('code_snippet.txt', 'r') as f:
         test = f.read()
 
-    status, anomalies = execute_code(test)
+    status, anomalies = execute_code(test, 'anomalies')
 
     print(anomalies)

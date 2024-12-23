@@ -4,9 +4,18 @@ import plotly.express as px
 import pandas as pd
 import streamlit as st
 
-from plot import generate_time_series_chart
+from plot import generate_time_series_chart, plot_dataframe
+from agents import execute_code
 
 st.title("Orion Agent")
+
+# Add file uploader for CSV
+uploaded_file = st.file_uploader("Upload a CSV file containing your time series data", type="csv")
+
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    st.write("Uploaded CSV Data:")
+    st.write(df)
 
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
@@ -27,17 +36,58 @@ if prompt := st.chat_input("What is up?"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        stream = client.chat.completions.create(
-            model=st.session_state["openai_model"],
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
-        response = st.write_stream(stream)
-        if "plot" in prompt.lower():
+        if "plot generic" in prompt.lower():
+            response = "Here's a plot"
+            st.write(response)
             fig = generate_time_series_chart()
             st.plotly_chart(fig)
+
+        elif "plot" in prompt.lower():
+            if uploaded_file is None:
+                response = "Please upload a CSV file first"
+                st.write(response)
+            else:
+                response = "Here's a plot"
+                column_mapping_prompt = f"""
+                    Given the a csv file that has the following columns: 
+                    {str(df.columns.tolist())}
+                    which columns represent the time and which one represents the value?
+                    return the output as a json object with the following format:
+                    {{
+                        "time_column": "the name of the time column",
+                        "value_column": "the name of the value column"
+                    }}
+                    do not include any other text in your response.
+                """
+                column_mapping_response = client.chat.completions.create(
+                    model=st.session_state["openai_model"],
+                    messages=[{"role": "system", "content": column_mapping_prompt}],
+                    response_format={"type": "json_object"}
+                )
+                column_mapping_response = eval(column_mapping_response.choices[0].message.content)
+                time_column = column_mapping_response['time_column']
+                value_column = column_mapping_response['value_column']
+                fig = plot_dataframe(df, time_column, value_column)
+                st.plotly_chart(fig)
+
+        elif "number of rows" in prompt.lower():
+            response = f"The number of rows in the uploaded CSV file is {len(df)}"
+            st.write(response)
+
+        elif 'code' in prompt.lower():
+            response = "Executing code"
+            x = execute_code("x = 'hello'", 'x')
+            st.write(x)
+
+        else:
+            stream = client.chat.completions.create(
+                model=st.session_state["openai_model"],
+                messages=[
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ],
+                stream=True,
+            )
+            response = st.write_stream(stream)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
