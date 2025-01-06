@@ -27,7 +27,7 @@ CONTEXT:
 {}
 
 INSTRUCTIONS:
-Answer the users QUESTION using the DOCUMENT above.
+Answer the users QUESTION using the CONTEXT above.
 Keep your answer grounded in the facts of the CONTEXT.
 
 Make sure to use the right pipeline name and right configuration
