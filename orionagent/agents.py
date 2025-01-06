@@ -5,6 +5,8 @@ import os
 # import openai
 from openai import OpenAI
 
+from orionagent.rag.embeddings import find_similar
+
 TEMPLATE = """
 Orion is a python library for time series anomaly detection.
 Familiarize yourself with the Orion library: https://github.com/sintel-dev/Orion/
@@ -15,6 +17,21 @@ provided under USER TASK DESCRIPTION by generating code that explicitly uses Ori
 Only return code, return nothing else.
 
 USER TASK DESCRIPTION:
+"""
+
+RAG_TEMPLATE = """
+QUESTION:
+{}
+
+CONTEXT:
+{}
+
+INSTRUCTIONS:
+Answer the users QUESTION using the DOCUMENT above.
+Keep your answer grounded in the facts of the CONTEXT.
+
+Make sure to use the right pipeline name and right configuration
+of hyperparameters. Only return code, return nothing else.
 """
 
 class LLM:
@@ -38,6 +55,27 @@ class OpenAILLM(LLM):
             ],
         )
         return response.choices[0].message.content
+    
+    def run_rag(self, user_task: str) -> str:
+        similar_documents = find_similar(user_task, k=3)
+        documents = [
+            f'DOCUMENT #{i+1}: {doc}' for i, doc in enumerate(similar_documents)
+        ]
+        
+        prompt = RAG_TEMPLATE.format(user_task, documents)
+        system_message = """
+            Orion is a python library for time series anomaly detection.
+            Familiarize yourself with the Orion library: https://github.com/sintel-dev/Orion/
+        """
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt}
+            ],
+        )
+        return response.choices[0].message.content
+
 
 class Agent:
     def __init__(self, llm: LLM, name: str):
