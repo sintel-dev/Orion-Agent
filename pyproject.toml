@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "orion-agent"
+name = "orionagent"
 version = "0.1.0"
 description = "An agent to interact with Orion."
 maintainers = [

@@ -2,14 +2,14 @@
 
 An app for Orion interaction using LLMs.
 
-## Install
+# Install
 
-### Requirements
+## Requirements
 **Orion-Agent** is developed on Python 3.8, 3.9, 3.10, and 3.11.
 
 Also, although it is not strictly required, the usage of a [virtualenv](https://virtualenv.pypa.io/en/latest/) is highly recommended in order to avoid interfering with other software installed in the system where **Orion-Agent** is run.
 
-### Install from source
+## Install from source
 We use **poetry** for package management. Please [install poetry](https://python-poetry.org/docs/#installation) according to the documentation.
 
 To check if poetry is installed:
@@ -27,9 +27,9 @@ Then install the package using poetry:
 poetry install
 ```
 
-## Quickstart
+# Quickstart
 
-### Set up keys
+## Set up keys
 
 Create a new file called `orionagent/.streamlit/secrets.toml` with the following content:
 
@@ -37,7 +37,7 @@ Create a new file called `orionagent/.streamlit/secrets.toml` with the following
 OPENAI_API_KEY = "your OpenAI key"
 ```
 
-### Run the app
+## Run the app
 
 ```bash
 streamlit run app.py
