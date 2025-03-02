@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "orionagent"
+version = "0.1.0"
+description = "An agent to interact with Orion."
+maintainers = [
+  "MIT Data To AI Lab <dailabmit@gmail.com>",
+]
+authors = [
+  "Sarah Alnegheimish <smish@mit.edu>",
+  "Moulay Draidia",
+]
+classifiers = [
+    'Development Status :: 2 - Pre-Alpha',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: MIT License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+]
+keywords = ['orion-agent','Orion-Agent', 'agent', 'orion']
+license = 'MIT license'
+readme = "README.md"
+homepage = 'https://github.com/sintel-dev/Orion-Agent'
+
+
+[tool.poetry.dependencies]
+python = "^3.8,<3.12,!=3.9.7"
+
+orion-ml = "^0.6.0,<0.8"
+openai = "^1.46.0"
+pandas = ">=1,<3"
+numpy = "^1.17.5,<2"
+plotly = "^5.24.1"
+streamlit = "^1.39.0"
+tiktoken = "^0.7.0"
+PyGithub = "^2.4.0" # for document collection
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
