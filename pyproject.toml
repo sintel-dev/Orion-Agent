@@ -27,7 +27,7 @@ homepage = 'https://github.com/sintel-dev/Orion-Agent'
 
 
 [tool.poetry.dependencies]
-python = "^3.8,<3.12,!=3.9.7"
+python = "^3.9,<3.12,!=3.9.7"
 
 orion-ml = "^0.6.0,<0.8"
 openai = "^1.46.0"
@@ -37,6 +37,9 @@ plotly = "^5.24.1"
 streamlit = "^1.39.0"
 tiktoken = "^0.7.0"
 PyGithub = "^2.4.0" # for document collection
+botocore = "1.29.76"
+torch = "2.2.2"
+tensorflow-macos = "2.14.1"
 
 
 [build-system]

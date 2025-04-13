@@ -1,11 +1,13 @@
 import ast
+import textwrap
 import json
 import os
+import re
 
 # import openai
 from openai import OpenAI
 
-from orionagent.rag.embeddings import find_similar
+from rag.embeddings import find_similar, load_embeddings
 
 TEMPLATE = """
 Orion is a python library for time series anomaly detection.
@@ -44,6 +46,8 @@ class OpenAILLM(LLM):
         self.client = client
         self.system_prompt = system_prompt
 
+        self.rag_table = load_embeddings(path='../embeddings.pkl')
+
         print('What can I help you with today?')
 
     def run(self, prompt: str) -> str:
@@ -57,7 +61,8 @@ class OpenAILLM(LLM):
         return response.choices[0].message.content
     
     def run_rag(self, user_task: str) -> str:
-        similar_documents = find_similar(user_task, k=3)
+
+        similar_documents = find_similar(user_task, table=self.rag_table, openai_client = self.client, k=3)
         documents = [
             f'DOCUMENT #{i+1}: {doc}' for i, doc in enumerate(similar_documents)
         ]
@@ -83,10 +88,42 @@ class Agent:
         self.name = name
 
     def ask_user(self, question: str) -> str:
-        print('Asking user...')
+        # print('Asking user...')
         response = input(question)
         return response
-    
+
+
+def normalize_generated_code(code: str) -> str:
+    # Remove ```python or ``` at the start, and closing ``
+    code = re.sub(r'^```(?:python)?\s*|\s*```$', '', code.strip(), flags=re.MULTILINE)
+
+    # Replace common invisible unicode with plain space
+    code = code.replace('\u00A0', ' ')  # non-breaking space
+    code = code.replace('\u200B', '')   # zero-width space
+    code = code.replace('\ufeff', '')   # BOM
+
+    # Normalize line endings and remove leading/trailing space
+    code = code.replace('\r\n', '\n').replace('\r', '\n')
+    code = textwrap.dedent(code)
+    code = code.strip()
+
+    # Remove leading blank lines
+    code = re.sub(r'^\s*\n', '', code, flags=re.MULTILINE)
+
+    # Make sure it ends with a newline (optional)
+    if not code.endswith('\n'):
+        code += '\n'
+
+
+    return code
+
+def is_code_valid(code: str) -> bool:
+    try:
+        ast.parse(code)
+        return True
+    except SyntaxError as e:
+        print(f"SyntaxError: {e}")
+        return False
 
 def execute_code(code: str, variable_name: str) -> bool:
     """Execute code block.
@@ -108,20 +145,22 @@ def execute_code(code: str, variable_name: str) -> bool:
             If the code is not executable.
     """
     try:
-        ast.parse(code) # check syntax, throws a SyntaxError
-
+        code = normalize_generated_code(code)
+        is_code_valid(code)
         # Execute the code and capture the output
         print('trying')
         exec_globals = {}
         exec_locals = {}
         exec(code, exec_globals, exec_locals)
+
+        print('executed successfully')
         
         result = exec_locals.get(variable_name, None)
         return True, result
     
     except Exception as ex:
         print(f'error {ex}')
-        return False
+        return False, None
 
 
 if __name__ == '__main__':
