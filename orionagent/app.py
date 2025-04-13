@@ -5,7 +5,10 @@ import pandas as pd
 import streamlit as st
 
 from plot import generate_time_series_chart, plot_dataframe
-from agents import execute_code
+from agents import execute_code, OpenAILLM
+
+import asyncio
+asyncio.set_event_loop(asyncio.new_event_loop())
 
 st.title("Orion Agent")
 
@@ -74,10 +77,28 @@ if prompt := st.chat_input("What is up?"):
             response = f"The number of rows in the uploaded CSV file is {len(df)}"
             st.write(response)
 
-        elif 'code' in prompt.lower():
-            response = "Executing code"
-            x = execute_code("x = 'hello'", 'x')
-            st.write(x)
+        elif 'detect anomalies' in prompt.lower():
+            anomaly_detector = OpenAILLM(client=client)
+
+            if uploaded_file:
+                prompt += f'Load the dataframe using csv file : {uploaded_file} '
+
+            st.write('Generating code to perform rag task')
+            response_code = anomaly_detector.run_rag(prompt)
+            with st.expander("View generated code and execution status"):
+                st.write(response_code)
+
+            st.write('Executing code')
+            status, anomalies = execute_code(response_code, 'anomalies')
+            st.write("execution success", status)
+            
+            if len(anomalies):
+                st.write('Detected anomalies')
+                st.write(anomalies)
+            else:
+                st.write('No anomalies detected')
+            response = anomalies
+
 
         else:
             stream = client.chat.completions.create(

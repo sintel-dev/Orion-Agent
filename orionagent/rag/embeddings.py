@@ -1,5 +1,7 @@
 import os
 import pickle
+import streamlit as st
+
 
 import tiktoken
 import numpy as np
@@ -48,7 +50,7 @@ def generate_embeddings(openai_key, path='orion_contents/', model="text-embeddin
                 continue
 
             name = file.split('/')[-1]
-            print(file)
+            # print(file)
             with open(os.path.join(root, file), 'r') as f:
                 data = f.read()
 
@@ -94,20 +96,20 @@ def format_into_table(embeddings):
 
 
 def load_embeddings(path='embeddings.pkl'):
-    with open('embeddings.pkl', 'rb') as f:
+    with open(path, 'rb') as f:
         embeddings = pickle.load(f)
 
     table = format_into_table(embeddings)
     return table
 
 
-def find_similar(text, table, openai_key, distance=CosineSimilarity, k=5):
+def find_similar(text, openai_client, table=None, distance=CosineSimilarity, k=5):
     """Return top similar documents."""
+
     sim = distance(dim=0)
     sim_table = table.copy()
     
-    client = OpenAI(api_key=openai_key)
-    embedding = get_embedding(text, client)
+    embedding = get_embedding(text, openai_client)
 
     embedding = torch.tensor(embedding.data[0].embedding)
     sim_table['similarity'] = sim_table['embedding'].apply(lambda x: sim(torch.tensor(x), embedding))
@@ -115,7 +117,7 @@ def find_similar(text, table, openai_key, distance=CosineSimilarity, k=5):
     topk = sim_table.iloc[:k]['text']
     for i, document in enumerate(topk):
         print(f'DOCUMENT #{i+1}:\n')
-        print(document)
+        # print(document)
 
     return topk
 
